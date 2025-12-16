@@ -37,6 +37,10 @@ class Pacman(pg.sprite.Sprite):
         pg.K_RIGHT: (+1, 0),
     }
 
+
+    
+        
+
     def __init__(self, maze: list, xy: tuple[int, int]):
         """
         こうかとん画像Surfaceを生成する
@@ -61,6 +65,26 @@ class Pacman(pg.sprite.Sprite):
             self.last_move_time = now
             return True
         return False
+    
+    def fry(self,key_lst: list[bool],screen:pg.Surface):
+    # 迷路の範囲内かチェック
+        for k, mv in __class__.delta.items():
+            if key_lst[k]:
+                new_grid_x = self.grid_x + mv[0]*2
+                new_grid_y = self.grid_y + mv[1]*2
+                
+                # 迷路の範囲内かチェック
+                if 0 <= new_grid_y < len(self.maze) and 0 <= new_grid_x < len(self.maze[0]):
+                    # 壁でなければ移動（1:壁、3:外枠）
+                    if self.maze[new_grid_y][new_grid_x] != 1 and self.maze[new_grid_y][new_grid_x] != 3:
+                        self.grid_x = new_grid_x
+                        self.grid_y = new_grid_y
+                        self.rect.center = (self.grid_x * CELL_SIZE + CELL_SIZE//2,
+                                          self.grid_y * CELL_SIZE + CELL_SIZE//2)
+                        # クッキーを食べる
+                        if self.maze[self.grid_y][self.grid_x] == 0:
+                            self.maze[self.grid_y][self.grid_x] = 2
+            screen.blit(self.image, self.rect)
 
     def update(self, key_lst: list[bool], screen: pg.Surface):
         """
@@ -87,7 +111,6 @@ class Pacman(pg.sprite.Sprite):
                         # クッキーを食べる
                         if self.maze[self.grid_y][self.grid_x] == 0:
                             self.maze[self.grid_y][self.grid_x] = 2
-                        time.sleep(0.1)  # こうかとんの移動速度を遅くする
                 break
         
         screen.blit(self.image, self.rect)
@@ -236,7 +259,11 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return 0
-        
+            elif event.type == pg.KEYDOWN:
+                last_pressed_key = event.key
+                if event.type == pg.KEYDOWN and event.key == pg.K_f:
+                    koukaman.fry(last_pressed_key,screen)
+                    
         screen.fill(bg_color)
         maze.draw(screen)
         
